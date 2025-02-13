@@ -1,11 +1,54 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MasterService } from '../../service/master.service';
 
 @Component({
   selector: 'app-users',
-  imports: [],
+  imports: [ReactiveFormsModule],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
 })
-export class UsersComponent {
+export class UsersComponent implements OnInit {
+
+  userForm: FormGroup = new FormGroup({});
+  masterSrv = inject(MasterService);
+  userList = signal<any[]>([]);
+
+  constructor() {
+    this.initializeForm();
+  }
+
+  ngOnInit(): void {
+    this.loadUsers();
+  }
+
+  initializeForm() {
+   this.userForm = new FormGroup({
+    userId: new FormControl(0),
+    userName: new FormControl(""),
+    emailId: new FormControl(""),
+    fullName: new FormControl(""),
+    password: new FormControl(""),
+    role: new FormControl("")
+   })
+  }
+
+  loadUsers() {
+    this.masterSrv.getAllUsers().subscribe((res:any)=>{
+      this.userList.set(res.data);
+    })
+  }
+
+  onSaveUser() {
+    debugger;
+    const formValue = this.userForm.value;
+    this.masterSrv.createNewUser(formValue).subscribe((res: any)=> {
+      if(res.result) {
+        alert("User Created Success");
+      }else {
+        alert(res.message)
+      }
+    })
+  }
 
 }
